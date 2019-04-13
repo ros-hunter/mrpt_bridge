@@ -16,7 +16,7 @@
 #include <gtest/gtest.h>
 
 using namespace std;
-using namespace mrpt::utils;  // DEG2RAD()
+using mrpt::DEG2RAD;
 
 void checkPoseMatrixFromRotationParameters(
 	const double roll, const double pitch, const double yaw)

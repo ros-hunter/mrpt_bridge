@@ -1,17 +1,34 @@
 cmake_minimum_required(VERSION 3.1)
+
+include(cmake/HunterGate.cmake)
+HunterGate(
+    URL "https://github.com/lsolanka/hunter/archive/v0.22.4-rosdevel21.tar.gz"
+    SHA1 "6c17c0e1e1cc7b81874a839bd32a31954869977c"
+    LOCAL
+)
+# Current Hunter caveats:
+#   - No PCL
+#   - No cv_bridge, marker_msgs, pcl_conversions
+
 project(mrpt_bridge)
+
+hunter_add_package(MRPT)
+hunter_add_package(ros_mrpt_msgs)
+hunter_add_package(ros_common_msgs)
+hunter_add_package(ros_comm)
+hunter_add_package(ros_tf)
 
 ## Find catkin macros and# libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-	cv_bridge
+    #cv_bridge
 	geometry_msgs
-	marker_msgs
+    #marker_msgs
 	message_generation
 	mrpt_msgs
 	nav_msgs
-	pcl_conversions
+    #pcl_conversions
 	roscpp
 	sensor_msgs
 	std_msgs
@@ -20,19 +37,20 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 ## System dependencies are found with CMake's conventions
-find_package(PCL 1.3 REQUIRED COMPONENTS common io)
-include_directories(${PCL_INCLUDE_DIRS})
-add_definitions(${PCL_DEFINITIONS})
+#find_package(PCL 1.3 REQUIRED COMPONENTS common io)
+#include_directories(${PCL_INCLUDE_DIRS})
+#add_definitions(${PCL_DEFINITIONS})
 
-find_package(MRPT 1.5 REQUIRED obs graphs maps slam)
+find_package(MRPT CONFIG REQUIRED obs graphs maps slam)
 message(STATUS "MRPT_VERSION: ${MRPT_VERSION}")
 if(MRPT_VERSION VERSION_LESS "1.9.9")
 	set (CMAKE_CXX_STANDARD 14)
 endif()
+set(MRPT_LIBARIES "mrpt-obs mrpt-graphs mrpt-maps mrpt-slam")
 
 # Debian Stretch doesn't properly find the recursive Qt5Widgets dependency from
 # PCL io.  We force find it here so that cmake is happy.
-find_package(Qt5Widgets REQUIRED)
+#find_package(Qt5Widgets REQUIRED)
 
 if (CMAKE_COMPILER_IS_GNUCXX)
 	# High level of warnings.
@@ -54,6 +72,7 @@ endif()
 ## LIBRARIES: libraries you create in this project that dependent projects also need
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
+set(PROJECT_INSTALLSPACE_LIBRARIES ros::${PROJECT_NAME})  # Required for Hunter
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES ${PROJECT_NAME}
@@ -82,22 +101,21 @@ add_library(${PROJECT_NAME}
 	include/${PROJECT_NAME}/GPS.h
 	include/${PROJECT_NAME}/imu.h
 	include/${PROJECT_NAME}/range.h
-	include/${PROJECT_NAME}/stereo_image.h
+    #	include/${PROJECT_NAME}/stereo_image.h
 	src/beacon.cpp
 	src/GPS.cpp
-	src/image.cpp
-	src/image.cpp
+    #	src/image.cpp
 	src/imu.cpp
 	src/landmark.cpp
 	src/laser_scan.cpp
 	src/map.cpp
-	src/marker_msgs.cpp
+    #	src/marker_msgs.cpp
 	src/network_of_poses.cpp
 	src/point_cloud.cpp
 	src/point_cloud2.cpp
 	src/pose.cpp
 	src/range.cpp
-	src/stereo_image.cpp
+    #	src/stereo_image.cpp
 	src/time.cpp
 )
 
@@ -116,9 +134,9 @@ target_link_libraries(${PROJECT_NAME}
    ${MRPT_LIBRARIES}
 )
 
-add_executable(test_Bridge src/test/test_Bridge.cpp)
-target_link_libraries(test_Bridge ${catkin_LIBRARIES} ${MRPT_LIBRARIES})
-add_dependencies(test_Bridge mrpt_msgs_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
+#add_executable(test_Bridge src/test/test_Bridge.cpp)
+#target_link_libraries(test_Bridge ${catkin_LIBRARIES} ${MRPT_LIBRARIES})
+#add_dependencies(test_Bridge mrpt_msgs_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
 
 #############
 ## Install ##
@@ -129,9 +147,15 @@ add_dependencies(test_Bridge mrpt_msgs_generate_messages_cpp ${catkin_EXPORTED_T
 
 ## Mark executables and/or libraries for installation
 install(TARGETS ${PROJECT_NAME}
+  EXPORT ${PROJECT_NAME}Targets
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+install(EXPORT ${PROJECT_NAME}Targets
+    DESTINATION share/${PROJECT_NAME}/cmake
+    NAMESPACE ros::
+    FILE ${PROJECT_NAME}Targets.cmake
 )
 
 ## Mark cpp header files for installation
@@ -150,7 +174,7 @@ if(CATKIN_ENABLE_TESTING)
     src/test/test_main.cpp
     src/test/test_time.cpp
     src/test/test_pose.cpp
-    src/test/test_pointcloud2.cpp
+    #    src/test/test_pointcloud2.cpp
     src/test/test_map.cpp
   )
   if(TARGET ${PROJECT_NAME}-test)
