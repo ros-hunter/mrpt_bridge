@@ -78,7 +78,7 @@ catkin_package(
   LIBRARIES ${PROJECT_NAME}
   CATKIN_DEPENDS
 	geometry_msgs
-	marker_msgs
+    #	marker_msgs
 	message_runtime
 	mrpt_msgs
 	nav_msgs
